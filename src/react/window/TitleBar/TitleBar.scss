@@ -1,0 +1,35 @@
+@import "../../color.scss";
+
+$pm: .3em;
+$lh: 1.2em;
+
+.TitleBar {
+    -webkit-app-region: drag;
+    user-select: none;
+    display: flex;
+    background: $_B1;
+    color: $_F1;
+    line-height: $lh;
+    height: $pm*2+$lh;
+    * {
+        flex: 1;
+    }
+    .-title {
+        color: $_F2;
+        padding: $pm .5em;
+    }
+    .-buttons {
+        $EIU_W: 3em;
+        flex: 0 0 3*$EIU_W;
+        -webkit-app-region: none;
+        > * {
+            padding: $pm 0;
+            text-align: center;
+            display: inline-block;
+            width: $EIU_W;
+            
+            &:hover { background: $_B2; color: $_F2; }
+            &.-wb-close:hover { background: $_CE_B; color: $_CE_F; }
+        }
+    }
+}
