@@ -21,7 +21,8 @@ export default class CommandSender {
         this.connection = new Connection(ip,port);
         this.connection.event.on("packet",this.handlePacket.bind(this));
 
-        this.config = {...(config ?? {}), ...DEFAULT_CMDSENDER_CONFIG}; Object.freeze(this.config);
+        // Use the provided config, defaulting to DEFAULT_CMDSENDER_CONFIG where items are missing. 
+        this.config = {...DEFAULT_CMDSENDER_CONFIG, ...(config ?? {})}; Object.freeze(this.config);
     }
 
 
