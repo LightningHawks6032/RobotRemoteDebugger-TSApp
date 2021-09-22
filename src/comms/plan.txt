@@ -1,0 +1,6 @@
+Run some "Create Dev Connection" TeleOp on robot
+    - robot creates ServerSocket
+    - connection stuff is on its own thread so it won't be stopped by switching teleops
+    - app allows choosing connection ip, press button to attempt connection
+
+Connect using "net" to the robot.
