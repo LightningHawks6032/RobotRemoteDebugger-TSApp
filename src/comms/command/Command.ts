@@ -1,14 +1,15 @@
-import { Packet } from "./packet-codec";
+import { Packet } from "../packet-codec";
 
 export const commandNameFormat = /^[A-Z_]{4}$/;
 
-type ReqHandler = (packet:Packet)=>void;
-type ResHandler = (pReq:Packet,pRes:Packet[])=>void;
+export type ReqHandler = (packet:Packet)=>void;
+export type ResHandler = (pReq:Packet,pRes:Packet[])=>void;
 
 class Command {
     private static readonly commands: Command[] = [];
 
     private reqHandler?:ReqHandler;
+    private reqSendHandler?:ReqHandler;
     private resHandler?:ResHandler;
 
     private constructor(readonly id:string) {
@@ -20,9 +21,11 @@ class Command {
     private alreadyHasHandler() { throw new Error("Attempted to double-assign handlers to a command.")}
     onRequest (callback:ReqHandler):this { if (this.reqHandler) this.alreadyHasHandler(); else this.reqHandler=callback; return this }
     onResponse(callback:ResHandler):this { if (this.resHandler) this.alreadyHasHandler(); else this.resHandler=callback; return this }
+    onRequestSend(callback:ReqHandler):this { if (this.reqSendHandler) this.alreadyHasHandler(); else this.reqSendHandler=callback; return this }
     
     handleRequest(packet:Packet):void { if (this.reqHandler) this.reqHandler(packet); }
     handleResponse(pReq:Packet,pRes:Packet[]):void { if (this.resHandler) this.resHandler(pReq,pRes); }
+    handleRequestSend(packet:Packet):void { if (this.reqSendHandler) this.reqSendHandler(packet); }
 
 
     /** Get a command by it's command id. */

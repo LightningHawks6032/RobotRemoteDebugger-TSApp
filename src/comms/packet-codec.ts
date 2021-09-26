@@ -14,7 +14,7 @@
 
 import BufferCodec from "./BufferEncoder";
 import { readChar } from "../util/buffer-util";
-import Command from "./Command";
+import Command from "./command/Command";
 
 
 /** Map from long param type names to single char names. */
@@ -34,6 +34,11 @@ const packetTypeCharsInv:{[key:string]:Packet["type"]|undefined} = Object.fromEn
 
 /** JSON representation of a parameter sent in packets. */
 export type PacketParam = Readonly<{type:"int",data:number}|{type:"float",data:number}|{type:"string",data:string}>;
+
+/** PacketParam except it must be one of the types instead of any. (doen't work right if using more than one though, so don't) */
+export type SpecificPacketParam<T extends "int"|"float"|"string"> = Readonly<{type:T,data:{int:number,float:number,string:string}[T]}>;
+/** alias for `SpecificPacketParam` */ 
+export type SPacketParam<T extends "int"|"float"|"string"> = SpecificPacketParam<T>;
 
 /** JSON representation of packets sent to/from the robot. */
 export type Packet = Readonly<{

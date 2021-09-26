@@ -1,7 +1,7 @@
-import { timeSince as millisSince } from "../util/time-util";
+import { timeSince as millisSince } from "../../util/time-util";
 import Command from "./Command";
-import Connection from "./Connection";
-import { Packet, PacketParam } from "./packet-codec";
+import Connection from "../Connection";
+import { Packet, PacketParam } from "../packet-codec";
 import "./all-commands";
 
 export type CommandSenderConfig = {reqMaxAge:number,pruneInterval:number,sendDelay:number};
@@ -41,13 +41,16 @@ export default class CommandSender {
         const resPacket:Packet = {requestId,command,params,type:"response"};
         this.sendOrEnqueue(immediate,resPacket);
     }
-    /** Make a request to the robot and queue the packet for sending. */
-    makeRequest(command:Command, params:PacketParam[], immediate = false):void {
+    /** Make a request to the robot and queue the packet for sending.
+     * @returns The request id. */
+    makeRequest(command:Command, params:PacketParam[], immediate = false):number {
         const requestId = Math.floor(0x100000000*Math.random())-0x80000000;
         const reqPacket:Packet = {requestId,params,command,type:"request"};
+        command.handleRequestSend(reqPacket);
         this.sendOrEnqueue(immediate, reqPacket);
 
         this.sentCommandsById[requestId] = {lastUpdated:Date.now(),request:reqPacket,responses:[]};
+        return reqPacket.requestId;
     }
 
     /** Handle a group of incoming packets. Bound to `this.connection.event.on("packets",(packets:PacketData[])=>void)` */
