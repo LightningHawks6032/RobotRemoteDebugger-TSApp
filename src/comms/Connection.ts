@@ -4,7 +4,7 @@ import { EEEntry } from "../util/EventEmitterInterface";
 import { Packet, PacketCodec } from "./packet-codec";
 
 /** Openness state of the connection. */
-type ConnectionState = "CLOSED"|"OPENING"|"OPEN"|"CLOSING";
+export type ConnectionState = "CLOSED"|"OPENING"|"OPEN"|"CLOSING";
 
 const allEvents = ["connect","ready","timeout","drain","end","close","data","error","lookup"];
 type ConnectionEventEmitterCommon = (
@@ -17,10 +17,12 @@ type ConnectionEventEmitterCommon = (
     EEEntry<"error", [Error  ]> // note: I dropped some events which were clunky and or unlikely to be used.
 );
 type ConnectionEventEmitter = (ConnectionEventEmitterCommon &
-    EEEntry<"packet",[Packet[]]> // Custom event usable by external systems
-);
+    // Custom events usable by external systems
+    EEEntry<"packet",[Packet[]]> &
+    EEEntry<"stateChange",[ConnectionState]>
+) & EventEmitter;
 
-type ConnectionEventEmitterPrivate = ConnectionEventEmitterCommon;
+type ConnectionEventEmitterPrivate = ConnectionEventEmitterCommon & EventEmitter;
 
 /** Handle the connection, disconnection, and data from the port.  */
 export default class Connection {
@@ -28,6 +30,8 @@ export default class Connection {
     private current?: net.Socket;
     /** Openness state of the connection. */
     private state:ConnectionState = "CLOSED";
+    /** Openness state of the connection. */
+    public getState():ConnectionState { return this.state }
     /** An EventEmitter used to handle events from the current socket outside the connection object. */
     readonly event:ConnectionEventEmitter = new EventEmitter();
     /** Like event, but only inside the connection object. */
@@ -42,10 +46,22 @@ export default class Connection {
         this.privateEvent.on("close", wasError => {
             this.state = "CLOSED";
             delete this.current;
+            this.emitStateChange();
         });
-        this.privateEvent.on("error", e => { throw e });
+        this.privateEvent.on("error", e => {  console.error(e) });
+        this.privateEvent.on("connect", ()=>{
+            this.state = "OPEN";
+            this.emitStateChange();
+        });
+        this.event.on("error",e=>void(0));
     }
 
+
+    /** Emit the stateChange event to the public EventEmitter. */
+    private emitStateChange() {
+        console.log(this.state);
+        this.event.emit("stateChange",this.state);
+    }
 
     /** Throw an error if the socket is disconnected. */
     private assertConnected():net.Socket {
@@ -70,9 +86,10 @@ export default class Connection {
             this.current.on(eventName, this.emitEvent.bind(this,eventName));
     }
     /** Emit an event to `this.privateEvent` and `this.event`. */
-    private emitEvent(eventName:string,args:never[]) {
+    private emitEvent(eventName:string, ...args:never[]) {
         this.privateEvent.emit(eventName as never, ...args as []);
-        this.event       .emit(eventName as never, ...args as []);
+        if (eventName !== "error")
+            this.event   .emit(eventName as never, ...args as []);
     }
     
 
@@ -83,9 +100,8 @@ export default class Connection {
             return;
         }
         this.state = "CLOSING";
+        this.emitStateChange();
         await new Promise<void>(res=>this.current.end(res));
-        this.state = "CLOSED";
-        delete this.current;
     }
     /** Connect / reconnect to the remote side. */
     async connect():Promise<void> {
@@ -94,8 +110,12 @@ export default class Connection {
         else if (this.state === "CLOSING")
             throw new Error("Cannot open a connection while it is attempting to close, wait for it to finish.");
         this.state = "OPENING";
-        await new Promise<void>(res=>this.setCurrent(net.connect(this._port,this._ip,res)));
-        this.state = "OPEN";
+        this.emitStateChange();
+        
+        this.setCurrent(new net.Socket());
+        console.log(1);
+        await new Promise<void>(res=>this.current.connect(this._port,this._ip,res));
+        console.log(2);
     }
     /** Switch the IP and port of the connection, will close and reopen if connection is open. */
     async changeTarget(ip:string,port:number):Promise<void> {
@@ -103,6 +123,8 @@ export default class Connection {
         if (this.state === "OPEN" || this.state === "OPENING")
             this.connect();
     }
+    /** Get the current ip and port of this connection. */
+    getTarget():{ip:string,port:number} { return {ip:this._ip,port:this._port} }
 
     /** Callback bound to `event.on("data",(data:Buffer)=>void)`, decodes packets and forwards them back to the event system. */
     private onData(buffer:Buffer):void {

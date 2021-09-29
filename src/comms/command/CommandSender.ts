@@ -1,6 +1,6 @@
 import { timeSince as millisSince } from "../../util/time-util";
 import Command from "./Command";
-import Connection from "../Connection";
+import Connection, { ConnectionState } from "../Connection";
 import { Packet, PacketParam } from "../packet-codec";
 import "./all-commands";
 
@@ -28,11 +28,19 @@ export default class CommandSender {
 
     /** Change the ip and port the connection is attempting to reach. */
     async changeConnectionTarget(ip:string,port:number):Promise<void> { await this.connection.changeTarget(ip,port) }
+    /** Get the ip and port the connection is currently using. */
+    getConnectionTarget():{ip:string,port:number} { return this.connection.getTarget() }
     /** Connect to robot. (Or reload if already connected. */
     async connect():Promise<void> { await this.connection.connect() }
     /** Disconnect from robot. */
     async disconnect():Promise<void> { await this.connection.disconnect() }
-    
+    /** Bind a handler to `conn.onStateChange` */
+    onConnStateChange(handler:(state:ConnectionState)=>void):void { this.connection.event.on("stateChange",handler) }
+    /** Unbind a handler from `conn.onStateChange` */
+    offConnStateChange(handler:(state:ConnectionState)=>void):void { this.connection.event.off("stateChange",handler) }
+    /** Get the openness state of the connection to the robot. */
+    getConnectionState():ConnectionState { return this.connection.getState() }
+
 
     /** Respond to a packet the robot sent and queue the response for sending. */
     respondTo(packet:Packet, command:Command, params:PacketParam[], immediate = false):void {

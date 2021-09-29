@@ -1,0 +1,34 @@
+.ConnectionPanel {
+    border: 1px solid #777777;
+    display: inline-block;
+    width: 250px;
+
+    > div {
+        display: flex;
+        padding: .3em;
+
+        > label, > span, > input, > button {
+            flex: 1 1 50px;
+            width: 50px;
+        }
+    }
+
+    input, button {
+        border: 1px solid currentColor;
+    }
+    input {
+        color: #444444;
+        background: #ffffff;
+    }
+    button {
+        color: #ffffff;
+        background: #666666;
+        &:hover:not(:disabled) {
+            background: #444444;
+        }
+        &:disabled {
+            opacity: .5;
+        }
+        padding: .2em;
+    }
+}
