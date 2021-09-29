@@ -22,7 +22,7 @@ export default class ConnectionManager extends React.Component<unknown,{ip:strin
         CommsIPC.stateChangeHandlers.delete(this.onStateChanged);
     }
 
-    onStateChanged:(v:StateData)=>void = connState=>{console.log(connState);this.setState({connState})};
+    onStateChanged:(v:StateData)=>void = connState=>this.setState({connState});
 
     doSync:React.MouseEventHandler = async e=>{
         const ip = this.state.ip.trim();

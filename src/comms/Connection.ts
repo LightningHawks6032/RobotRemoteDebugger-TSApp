@@ -59,7 +59,6 @@ export default class Connection {
 
     /** Emit the stateChange event to the public EventEmitter. */
     private emitStateChange() {
-        console.log(this.state);
         this.event.emit("stateChange",this.state);
     }
 
@@ -113,9 +112,7 @@ export default class Connection {
         this.emitStateChange();
         
         this.setCurrent(new net.Socket());
-        console.log(1);
         await new Promise<void>(res=>this.current.connect(this._port,this._ip,res));
-        console.log(2);
     }
     /** Switch the IP and port of the connection, will close and reopen if connection is open. */
     async changeTarget(ip:string,port:number):Promise<void> {
