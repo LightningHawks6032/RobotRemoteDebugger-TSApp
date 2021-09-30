@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import net from "net";
 import { EEEntry } from "../util/EventEmitterInterface";
-import { Packet, PacketCodec } from "./packet-codec";
+import { isPacketFragment, Packet, PacketCodec } from "./packet-codec";
 
 /** Openness state of the connection. */
 export type ConnectionState = "CLOSED"|"OPENING"|"OPEN"|"CLOSING";
@@ -123,11 +123,19 @@ export default class Connection {
     /** Get the current ip and port of this connection. */
     getTarget():{ip:string,port:number} { return {ip:this._ip,port:this._port} }
 
+    private partialData:Buffer = Buffer.from([]);
     /** Callback bound to `event.on("data",(data:Buffer)=>void)`, decodes packets and forwards them back to the event system. */
-    private onData(buffer:Buffer):void {
+    private onData(buffer_:Buffer):void {
+        const buffer = Buffer.concat([this.partialData,buffer_]);
+        console.log("RECEIVING:",buffer_,"Reconstructed:",buffer);
+        
         const packets:Packet[] = [];
         // Keep reading packets until there is no data left.
         for (let off = 0; off < buffer.length;) {
+            if (isPacketFragment(buffer,off)) {
+                this.partialData = buffer.slice(off);
+                break;
+            }
             const [newOff,data] = PacketCodec.decode(buffer,off);
             off = newOff; packets.push(data);
         }
@@ -139,6 +147,7 @@ export default class Connection {
         this.assertConnected();
         // Encode, concatonate and send the packets.
         const data = Buffer.concat(packet.map(PacketCodec.encode));
+        console.log("SENDING: ",data);
         this.write(data);
     }
 }

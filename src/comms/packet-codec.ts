@@ -102,14 +102,16 @@ export const PacketParamCodec: BufferCodec<PacketParam> = {
 /** Utility for en/decoding Packets. */
 export const PacketCodec: BufferCodec<Packet> = {
     encode(data:Packet):Buffer {
+        // Only use defined parameters.
+        const params = data.params.filter(Boolean);
         // Encode all the parts of the packet.
         const typeBuf = Buffer.from(data.type==="request"?">":"<","ascii"),
             cmdBuf = Buffer.from(data.command.id),
             idBuf = Buffer.alloc(4),
             nParamsBuf = Buffer.alloc(4),
-            paramsBuf = data.params.map(v=>PacketParamCodec.encode(v));
+            paramsBuf = params.map(v=>PacketParamCodec.encode(v));
         idBuf.writeInt32BE(data.requestId);
-        nParamsBuf.writeInt32BE(data.params.length);
+        nParamsBuf.writeInt32BE(params.length);
         // Concatonate the sections and return.
         return Buffer.concat([typeBuf,cmdBuf,idBuf,nParamsBuf,...paramsBuf]);
     },
@@ -142,3 +144,22 @@ export const PacketCodec: BufferCodec<Packet> = {
     }
     
 };
+
+/** Utility function to check if the packet data is all there. */
+export function isPacketFragment(buf:Buffer,off_:number):boolean {
+    let off = off_;
+    if (buf.byteLength-off < 13) return true;
+    off += 13;
+    const nPackets = buf.readInt32BE(off-4);
+    for (let i = 0; i < nPackets; i++) {
+        if (buf.byteLength-off < 8) return true;
+        const typeChar = readChar(buf,off), type = paramTypeCharsInv[typeChar];
+        off += 8;
+        if (type === "string") {
+            const strLen = buf.readInt32BE(off-4);
+            if (buf.byteLength-off < strLen) return true;
+            off += strLen;
+        }
+    }
+    return false;
+}

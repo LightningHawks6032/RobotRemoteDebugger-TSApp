@@ -96,14 +96,14 @@ export default class CommandSender {
         if (immediate)
             this.connection.sendPackets(...packets);
         else {
-            this.packetsToSend.push();
+            this.packetsToSend.push(...packets);
             this.scheduleSend();
         }
     }
     /** Schedule the queued packets to be sent. */
     private scheduleSend():void {
         if (this.sendTimeoutId === undefined)
-            this.sendTimeoutId = setTimeout(this.send,this.config.sendDelay);
+            this.sendTimeoutId = setTimeout(()=>this.send(),this.config.sendDelay);
     }
     /** Send the queued packets. (and clear the timeout in case it was called by an external system) */
     send():void {
