@@ -1,30 +1,45 @@
-$_F0: var(--_F0);
-$_F0_T: var(--_F0_T);
-$_F1: var(--_F1);
-$_F2: var(--_F2);
+@import "./graph/";
+@import "./connection/";
+@import "./styles/inputs";
 
-$_B0: var(--_B0);
-$_B1: var(--_B1);
-$_B2: var(--_B2);
+@mixin light {
+    --col-text: #363434;
+    --col-title: #444444;
 
-$_CE_F: var(--_CE_F);
-$_CE_B: var(--_CE_B);
+    --col-main-bg: #ffffff;
+    --col-titlebar-bg: #ffffff;
 
+    --col-divider: #cccccc;
 
-:root {
-    --_F0: #000000;
-    --_F0_T: #444444;
-    --_F1: #636363;
-    --_F2: #808080;
+    --col-error-text: #ffffff;
+    --col-error-bg: #e02929;
 
-    --_B0: #ffffff;
-    --_B1: #d8d8d8;
-    --_B2: #b3b3b3;
+    @include col-GraphSVG-light();
+    @include col-inputs-light();
+}
 
-    --_CE_F: #ffffff;
-    --_CE_B: #dd5555;
+@mixin dark {
+    --col-text: #ffffff;
+    --col-title: #eeeeee;
 
-    --_CL0: #ffaf37;
-    --_CL1: #15b6e7;
-    --_CL2: #f33cdb;
+    --col-main-bg: #414141;
+    --col-titlebar-bg: #3c3c3c;
+
+    --col-hovmod-bg: #ffffff22;
+
+    --col-divider: #4e4e4e;
+
+    --col-error-text: #ffffff;
+    --col-error-bg: #f54c4c;
+
+    @include col-GraphSVG-dark();
+    @include col-inputs-dark();
+}
+
+body.theme-light {
+    @include light();
+}
+
+body.theme-dark {
+    @include dark();
 }

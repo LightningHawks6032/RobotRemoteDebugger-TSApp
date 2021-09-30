@@ -1,21 +1,20 @@
-@import "../../color.scss";
-
-$pm: .3em;
-$lh: 1.2em;
+$pm: 5px;
+$lh: 20px;
 
 .TitleBar {
+    box-sizing: content-box;
     -webkit-app-region: drag;
     user-select: none;
     display: flex;
-    background: $_B1;
-    color: $_F1;
+    background: var(--col-titlebar-bg);
+    color: var(--col-text);
     line-height: $lh;
-    height: $pm*2+$lh;
+    overflow: hidden;
     * {
         flex: 1;
     }
     .-title {
-        color: $_F2;
+        color: var(--col-title);
         padding: $pm .5em;
     }
     .-buttons {
@@ -28,8 +27,8 @@ $lh: 1.2em;
             display: inline-block;
             width: $EIU_W;
             
-            &:hover { background: $_B2; color: $_F2; }
-            &.-wb-close:hover { background: $_CE_B; color: $_CE_F; }
+            &:hover { background: var(--col-hovmod-bg); color: var(--col-title); }
+            &.-wb-close:hover { background: var(--col-error-bg); color: var(--col-error-text); }
         }
     }
 }

@@ -1,6 +1,5 @@
 import { ipcRenderer } from "electron";
 import React from "react";
-import "./TitleBar.scss";
 
 export type WinBtnWhich = "min"|"max"|"close";
 

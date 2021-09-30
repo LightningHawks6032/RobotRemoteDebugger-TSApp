@@ -1,0 +1,21 @@
+@mixin col-GraphSVG-light {
+    --col-gs-bg: #ffffff;
+    --col-gs-grid: #00000077;
+    --col-gs-0: #1cb2bd;
+    --col-gs-1: #1cd38d;
+    --col-gs-2: #be1cd3;
+}
+
+@mixin col-GraphSVG-dark {
+    --col-gs-bg: #333333;
+    --col-gs-grid: #ffffff77;
+    --col-gs-0: #51e2ec;
+    --col-gs-1: #4ee4aa;
+    --col-gs-2: #da45ee;
+}
+
+
+.GraphSVG {
+    border: 1px solid var(--col-gs-grid);
+    background-color: var(--col-gs-bg);
+}

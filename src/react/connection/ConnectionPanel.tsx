@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import "./.scss";
 import { ConnectionState } from "../../comms/Connection";
 import { CommsIPCRenderer as CommsIPC } from "../../ipc/comms/CommsIPCRenderer";
 import { StateData } from "../../ipc/comms/CommsIPCCommon";
@@ -30,6 +29,10 @@ export default class ConnectionManager extends React.Component<unknown,{ip:strin
         await CommsIPC.setTarget({ip,port});        
         this.forceUpdate();
     };
+    doRevert:React.MouseEventHandler = e=>{
+        const {ip,port} = CommsIPC.getTarget();
+        this.setState({ip,port:port.toString()});
+    };
 
     doConnect:React.MouseEventHandler = async e=>this.setConnect(true);
     doDisconnect:React.MouseEventHandler = async e=>this.setConnect(false);
@@ -44,14 +47,18 @@ export default class ConnectionManager extends React.Component<unknown,{ip:strin
         const portNum = parseInt(port);
         const {ip:currentIp,port:currentPort} = CommsIPC.getTarget();
 
-        const needsTargetSync = isFinite(portNum) && portNum >= 0 && portNum < 0x10000 && (ipFormatted!==currentIp || portNum !== currentPort);
+        const targetChanged = ipFormatted!==currentIp || portNum !== currentPort;
+        const needsTargetSync = isFinite(portNum) && portNum >= 0 && portNum < 0x10000 && targetChanged;
 
         return (
             <div className="ConnectionPanel">
-                <div><label>Connected:</label><span>{connState}</span></div>
                 <div><label>IP:</label><input value={ip} onChange={this.onChangeIP}/></div>
                 <div><label>Port:</label><input value={port} onChange={this.onChangePort}/></div>
-                <div><button disabled={!needsTargetSync} onClick={this.doSync}>Sync IP/Port</button></div>
+                <div>
+                    <button disabled={!needsTargetSync} onClick={this.doSync}>Sync IP/Port</button>
+                    <button disabled={!targetChanged} onClick={this.doRevert}>Revert IP/Port</button>
+                </div>
+                <div><label>State:</label><span>{connState}</span></div>
                 <div>{
                     (connState === "CLOSED" && (<button onClick={this.doConnect}>Connect</button>)) ||
                     (connState === "OPEN" && (<button onClick={this.doDisconnect}>Disonnect</button>)) ||

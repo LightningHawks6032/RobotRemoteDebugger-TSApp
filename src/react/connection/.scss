@@ -1,7 +1,6 @@
+
 .ConnectionPanel {
-    border: 1px solid #777777;
-    display: inline-block;
-    width: 250px;
+    border-bottom: 1px solid var(--col-divider);
 
     > div {
         display: flex;
@@ -11,24 +10,11 @@
             flex: 1 1 50px;
             width: 50px;
         }
-    }
-
-    input, button {
-        border: 1px solid currentColor;
-    }
-    input {
-        color: #444444;
-        background: #ffffff;
-    }
-    button {
-        color: #ffffff;
-        background: #666666;
-        &:hover:not(:disabled) {
-            background: #444444;
+        > span {
+            font-size: .833333em;
         }
-        &:disabled {
-            opacity: .5;
+        > label, > span {
+            line-height: 25px;
         }
-        padding: .2em;
     }
 }

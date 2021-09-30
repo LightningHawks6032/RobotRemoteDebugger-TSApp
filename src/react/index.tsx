@@ -12,3 +12,5 @@ export function render():void {
         </>
     ), document.getElementById("root"));
 }
+
+document.body.classList.add("theme-dark");
