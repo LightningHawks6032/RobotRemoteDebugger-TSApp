@@ -3,6 +3,8 @@
 @import "./graph/";
 @import "./connection/";
 @import "./window/TitleBar/";
+@import "./window/TitleBar/size";
+@import "./logspanel/";
 
 @import "./color";
 
@@ -16,4 +18,21 @@ body {
 
 h1, h2, h3 {
   color: var(--col-title);
+}
+
+#root {
+  position: fixed;
+  top: 0px; bottom: 0px; left: 0px; right: 0px;
+
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.-connInfo {
+  border-right: 1px solid var(--col-divider);
+  min-width: 250px;
+  height: calc(100% - #{$titlebar-height});
+}
+.-mainPanel {
+  flex: 1;
 }

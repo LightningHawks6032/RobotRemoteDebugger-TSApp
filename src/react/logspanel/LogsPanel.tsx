@@ -30,10 +30,11 @@ export default class LogsPanel extends React.Component<unknown,{logs:{[key:strin
 
     render():ReactNode {
         return (
-            <div>
-                <button onClick={e=>this.updateLogGroups()}>ulg</button>
-                <button onClick={e=>this.updateLog(Object.keys(this.state.logs)[0])}>gL</button>
-                {JSON.stringify(this.state.logs)}
+            <div className="LogsPanel">
+                <h3>Logs and stuff</h3>
+                <button onClick={e=>this.updateLogGroups()}>Fetch Log Entries</button>
+                <button onClick={e=>Object.keys(this.state.logs).forEach(v=>this.updateLog(v))}>Fetch First Logs</button>
+                <p>{JSON.stringify(this.state.logs)}</p>
             </div>
         );
     }
