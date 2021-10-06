@@ -80,6 +80,7 @@ export default class Connection {
     /** Set the current socket. */
     private setCurrent(socket:net.Socket):void {
         this.current = socket;
+        this.partialData = Buffer.from([]);
         // Forward all events on the socket to this connection object's EventEmitter.
         for (const eventName of allEvents)
             this.current.on(eventName, this.emitEvent.bind(this,eventName));
@@ -133,11 +134,14 @@ export default class Connection {
         // Keep reading packets until there is no data left.
         for (let off = 0; off < buffer.length;) {
             if (isPacketFragment(buffer,off)) {
+                console.log("Receive has fragment:",buffer);
                 this.partialData = buffer.slice(off);
                 break;
             }
             const [newOff,data] = PacketCodec.decode(buffer,off);
             off = newOff; packets.push(data);
+            this.partialData = buffer.slice(off);
+            console.log("Packet existed, refragmenting:",this.partialData);
         }
         // Emit a packets event to the connection EventEmitter.
         this.event.emit("packet",packets);

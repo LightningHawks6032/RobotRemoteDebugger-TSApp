@@ -56,7 +56,7 @@ export type Packet = Readonly<{
 export const PacketParamCodec: BufferCodec<PacketParam> = {
     encode(data:PacketParam):Buffer {
         
-        const headerBuf:Buffer = Buffer.alloc(2); 
+        const headerBuf:Buffer = Buffer.alloc(1); 
         let dataBuf:Buffer;
 
         // Write "i","f", or "s" to the start to mark the data type. 
@@ -69,7 +69,7 @@ export const PacketParamCodec: BufferCodec<PacketParam> = {
         case "string": {
             // Encode the string and then put its byte length in a buffer.
             const strBuf = Buffer.from(data.data,"utf-8");
-            const lenBuf = Buffer.alloc(4); lenBuf.writeInt32BE(strBuf.byteLength);
+            const lenBuf = Buffer.alloc(2); lenBuf.writeUInt16BE(strBuf.byteLength);
             dataBuf = Buffer.concat([lenBuf,strBuf]);
         } break;
         }
@@ -89,7 +89,7 @@ export const PacketParamCodec: BufferCodec<PacketParam> = {
         case "float":  return [off+4,{type,data:buf.readFloatBE(off)}];
         case "int":    return [off+4,{type,data:buf.readInt32BE(off)}];
         case "string": {
-            const strLen = buf.readInt32BE(off); off += 4;
+            const strLen = buf.readUInt16BE(off); off += 2;
             return [off+strLen, {type,data:buf.slice(off,off+strLen).toString("utf-8")}];
         }
         // Type did not match, throw error.
@@ -105,7 +105,7 @@ export const PacketCodec: BufferCodec<Packet> = {
         // Only use defined parameters.
         const params = data.params.filter(Boolean);
         // Encode all the parts of the packet.
-        const typeBuf = Buffer.from(data.type==="request"?">":"<","ascii"),
+        const typeBuf = Buffer.from(packetTypeChars[data.type],"ascii"),
             cmdBuf = Buffer.from(data.command.id),
             idBuf = Buffer.alloc(4),
             nParamsBuf = Buffer.alloc(4),
@@ -151,12 +151,17 @@ export function isPacketFragment(buf:Buffer,off_:number):boolean {
     if (buf.byteLength-off < 13) return true;
     off += 13;
     const nPackets = buf.readInt32BE(off-4);
+    console.log("NPackets",nPackets);
+    
     for (let i = 0; i < nPackets; i++) {
-        if (buf.byteLength-off < 8) return true;
+        if (buf.byteLength-off < 5) return true;
         const typeChar = readChar(buf,off), type = paramTypeCharsInv[typeChar];
-        off += 8;
+        console.log("t",type);
+        
+        off += 5;
         if (type === "string") {
-            const strLen = buf.readInt32BE(off-4);
+            off -= 2;
+            const strLen = buf.readUInt16BE(off-2);
             if (buf.byteLength-off < strLen) return true;
             off += strLen;
         }
