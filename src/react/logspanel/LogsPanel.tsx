@@ -26,6 +26,7 @@ export default class LogsPanel extends React.Component<unknown,{logs:{[key:strin
         const logs = await CLogsIPCRenderer.execLOGS(group);
         console.log(logs);
         this.state.logs[group] = logs;
+        this.forceUpdate();
     }
 
     render():ReactNode {

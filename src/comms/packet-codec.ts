@@ -151,12 +151,9 @@ export function isPacketFragment(buf:Buffer,off_:number):boolean {
     if (buf.byteLength-off < 13) return true;
     off += 13;
     const nPackets = buf.readInt32BE(off-4);
-    console.log("NPackets",nPackets);
-    
     for (let i = 0; i < nPackets; i++) {
         if (buf.byteLength-off < 5) return true;
         const typeChar = readChar(buf,off), type = paramTypeCharsInv[typeChar];
-        console.log("t",type);
         
         off += 5;
         if (type === "string") {
